@@ -71,7 +71,7 @@ def calculate_fewest_steps_to_intersection(paths):
     traverse(paths[1], gen_update_intersection_weights(1))
 
     # step 3: return weight of lowest weight intersection
-    return min([w[0] + w[1] for w in intersection_to_weights.values()])
+    return min([sum(w) for w in intersection_to_weights.values()])
 
 
 def part_one():
