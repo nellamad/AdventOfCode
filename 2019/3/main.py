@@ -53,7 +53,7 @@ def calculate_fewest_steps_to_intersection(paths):
             path_weight += 1
             if (x, y) in intersection_to_weights:
                 old_weights = intersection_to_weights[(x, y)]
-                for i in range(2):
+                for i in range(len(old_weights)):
                     if i != wire_id:
                         intersection_to_weights[(x, y)][i] = old_weights[i]
                     else:
