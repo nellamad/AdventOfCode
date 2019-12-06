@@ -27,21 +27,21 @@ def traverse(path, step_action):
 
 
 def calculate_shortest_manhattan_distance_intersection(paths):
-    def update_smallest_distance(x, y):
-        nonlocal smallest_intersection_distance
+    def update_closest_intersection_distance(x, y):
+        nonlocal closest_intersection_distance
         if (x, y) in travelled_xy:
-            smallest_intersection_distance = min(smallest_intersection_distance, abs(x) + abs(y))
+            closest_intersection_distance = min(closest_intersection_distance, abs(x) + abs(y))
 
     travelled_xy = set()
-    smallest_intersection_distance = maxsize
+    closest_intersection_distance = maxsize
     traverse(paths[0], lambda x, y: travelled_xy.add((x, y)))
-    traverse(paths[1], update_smallest_distance)
+    traverse(paths[1], update_closest_intersection_distance)
 
-    return smallest_intersection_distance
+    return closest_intersection_distance
 
 
 def calculate_fewest_steps_to_intersection(paths):
-    def check_and_initialize_intersection(x, y):
+    def initialize_intersection(x, y):
         if (x, y) in travelled_xy:
             intersection_to_weights[(x, y)] = [maxsize, maxsize]
 
@@ -64,12 +64,13 @@ def calculate_fewest_steps_to_intersection(paths):
     travelled_xy, intersection_to_weights = set(), {}
     # step 1: calculate a list of intersections
     traverse(paths[0], lambda x, y: travelled_xy.add((x, y)))
-    traverse(paths[1], check_and_initialize_intersection)
+    traverse(paths[1], initialize_intersection)
 
     # step 2: calculate weight for path to each intersection for each line/wire
     traverse(paths[0], gen_update_intersection_weights(0))
     traverse(paths[1], gen_update_intersection_weights(1))
 
+    # step 3: return weight of lowest weight intersection
     return min([w[0] + w[1] for w in intersection_to_weights.values()])
 
 
