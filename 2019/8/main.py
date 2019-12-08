@@ -1,7 +1,55 @@
 from sys import maxsize
-from itertools import permutations
 
 INPUT_PATH = "input.txt"
+
+
+def get_program():
+    with open(INPUT_PATH) as fp:
+        return fp.readline().strip()
+
+
+class Pixel:
+    pixel_to_display_char = {
+        '0': ' ',
+        '1': '#',
+        '2': '?',
+    }
+
+    def __init__(self, colour):
+        self.colour, self.display_colour = colour, self.pixel_to_display_char[colour]
+
+    def __repr__(self):
+        return self.colour
+
+    def __str__(self):
+        return self.colour
+
+    def __eq__(self, other):
+        return self.colour == other
+
+    def __hash__(self):
+        return self.colour.__hash__()
+
+
+class Layer:
+    def __init__(self, rows):
+        self.rows = rows
+
+    def __iter__(self):
+        yield from self.rows
+
+    def __getitem__(self, i):
+        return self.rows[i]
+
+    def count(self, elem):
+        total = 0
+        for row in self:
+            total += row.count(elem)
+        return total
+
+    def print(self):
+        for row in self.rows:
+            print([p.display_colour for p in row])
 
 
 class Image:
@@ -10,67 +58,50 @@ class Image:
         self.layers = self.__decode__(pixels)
 
     def __decode__(self, pixels):
-        print(pixels)
         layers = []
         while len(pixels) > 0:
-            layer = []
+            rows = []
             for n in range(self.height):
                 row = []
                 for m in range(self.width):
-                    if len(pixels) > 0:
-                        row.append(pixels.pop(0))
-                layer.append(row)
-            layers.append(layer)
+                    row.append(Pixel(pixels.pop(0)))
+                rows.append(row)
+            layers.append(Layer(rows))
         return layers
 
     def print(self):
-        for layer in self.layers:
-            print(layer)
+        final_rows = []
+        for n in range(self.height):
+            row = []
+            for m in range(self.width):
+                for i, layer in enumerate(self.layers):
+                    pixel = layer[n][m]
+                    if pixel == '2':
+                        continue
+                    else:
+                        row.append(pixel)
+                        break
+            final_rows.append(row)
 
-    def __str__(self):
-        return "".join(["".join(row) for layer in self.layers for row in layer])
-
-
-def get_program():
-    with open(INPUT_PATH) as fp:
-        return fp.readline().strip()
+        Layer(final_rows).print()
+        # print("".join(["".join([str(p) for p in row]) for row in final_rows]))
 
 
 def part_one():
     image = Image(list(get_program()), 25, 6)
-    #image.print()
     min_zero_layer, min_zeroes = 0, maxsize
     for i, layer in enumerate(image.layers):
         zeroes = layer.count('0')
-        for row in layer:
-            zeroes += row.count('0')
         if zeroes < min_zeroes:
             min_zero_layer, min_zeroes = layer, zeroes
 
-    ones, twos = 0, 0
-    for row in min_zero_layer:
-        ones += row.count('1')
-        twos += row.count('2')
+    ones, twos = min_zero_layer.count('1'), min_zero_layer.count('2')
     return ones * twos
 
 
 def part_two():
-    image = Image(list(get_program()), 25, 6)
-    decoded = []
-    for n in range(image.height):
-        row = []
-        for m in range(image.width):
-            for i, layer in enumerate(image.layers):
-                pixel = layer[n][m]
-                if pixel == '2':
-                    continue
-                else:
-                    print("Found non-transparent pixel {0} at layer {1} for coord {2},{3}".format(pixel, i, m, n))
-                    row.append(pixel)
-                    break
-        decoded.append(row)
-
-    return str("".join(["".join(row) for layer in decoded for row in layer]))
+    Image(list(get_program()), 25, 6).print()
+    return "Read picture printed above"
 
 
 if __name__ == '__main__':
